@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from openai import OpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import SystemMessage, HumanMessage
 from retriever import retrieve_chunks
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,8 +21,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-4o-mini")
+client = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.2,
+    google_api_key=os.getenv("GEMINI_API_KEY")
+)
 
 
 class ChatRequest(BaseModel):
@@ -56,40 +60,32 @@ def chat(req: ChatRequest):
         context = "\n\n---\n\n".join([c["content"] for c in chunks])
 
         # 3) LLM
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "Eres un asistente experto en finanzas empresariales, especializado en el ánalisis de reportes financieros anuales.\n"
-                    "Tu tarea es proporcionar respuestas precisas SOLO utilizando documentos referentes a reportes financieros que se te está compartiendo.\n"
-                    "Los documentos utilizados para generar las respuestas estan delimitados por los caractéres ####.\n\n"
-                    "Documentos:\n"
-                    "####\n"
-                    f"{context}\n"
-                    "####\n\n"
-                    "IMPORTANTE:\n"
-                    "- En caso de no saber la respuesta, no intentar responder con datos generados.\n"
-                    "- En caso no se encuentre la respuesta en el documento, SOLO colocar: No hay información.\n"
-                    "- La respuesta generada deberá ser detallada y en un lenguaje formal.\n"
-                    "- La respuesta que generes no debe tener más de 80 palabras."
-                ),
-            },
-            {
-                "role": "user",
-                "content": (
-                    "Responder a la pregunta utilizando información de los documentos compartidos.\n\n"
-                    f"Pregunta:\n{question}"
-                ),
-            },
-        ]
-
-        response = client.chat.completions.create(
-            model=CHAT_MODEL,
-            messages=messages,
-            temperature=0.2,
+        system_message = SystemMessage(
+            content=(
+                "Eres un asistente experto en finanzas empresariales, especializado en el ánalisis de reportes financieros anuales.\n"
+                "Tu tarea es proporcionar respuestas precisas SOLO utilizando documentos referentes a reportes financieros que se te está compartiendo.\n"
+                "Los documentos utilizados para generar las respuestas estan delimitados por los caractéres ####.\n\n"
+                "Documentos:\n"
+                "####\n"
+                f"{context}\n"
+                "####\n\n"
+                "IMPORTANTE:\n"
+                "- En caso de no saber la respuesta, no intentar responder con datos generados.\n"
+                "- En caso no se encuentre la respuesta en el documento, SOLO colocar: No hay información.\n"
+                "- La respuesta generada deberá ser detallada y en un lenguaje formal.\n"
+                "- La respuesta que generes no debe tener más de 80 palabras."
+            )
         )
 
-        answer = response.choices[0].message.content
+        user_message = HumanMessage(
+            content=(
+                "Responder a la pregunta utilizando información de los documentos compartidos.\n\n"
+                f"Pregunta:\n{question}"
+            )
+        )
+
+        response = client.invoke([system_message, user_message])
+        answer = response.content
         return {"answer": answer}
 
     except Exception as e:
