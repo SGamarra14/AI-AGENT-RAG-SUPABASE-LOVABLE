@@ -47,7 +47,6 @@ RAG-Lovable/
 ├── agente1.py                      # Agente RAG interactivo
 ├── retriever.py                    # Funciones de recuperación de chunks
 ├── supabase_client.py              # Cliente de Supabase
-├── CLAUDE.md                       # Documentación para Claude Code
 ├── .env.example                    # Template de variables de entorno
 └── README.md                       # Este archivo
 ```
@@ -147,35 +146,6 @@ model="models/gemini-embedding-001"
 # Para LLM
 model="gemini-2.5-flash"
 ```
-
-## 📚 Documentación Adicional
-
-- Ver `CLAUDE.md` para detalles técnicos completos
-- Ver notebooks en `notebooks/` para ejemplos paso a paso
-
-## 🚀 Deploy
-
-El proyecto está diseñado para funcionar en:
-- Máquinas locales (Windows, macOS, Linux)
-- Plataformas de hosting (Render, Heroku, etc.)
-- Contenedores Docker (ruta compatible con `os.path`)
-
-## 🤝 Contribuciones
-
-Las mejoras son bienvenidas. Por favor:
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo licencia MIT.
-
-## 👤 Autor
-
-Sebastian Gamarra
 
 ## 🙏 Agradecimientos
 
