@@ -1,0 +1,6 @@
+notebooks/
+data/
+README.md
+agente.py
+ingest.py
+pdf_utils.py
